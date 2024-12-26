@@ -28,6 +28,8 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function editUser(id: number, data: Partial<User>) {
+  if (data.password) delete data.password;
+  if (data.email) delete data.email;
   await userRepository.update(id, data);
   return userRepository.findOneBy({ id });
 }
