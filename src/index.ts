@@ -15,8 +15,7 @@ const server: HTTPServer = createServer(app);
 const io: SocketServer = new SocketServer(server);
 const peerServer = ExpressPeerServer(server);
 
-app.use(express.json());
-app.use("/api", userRouter);
+app.use("/users", express.json(), userRouter);
 app.use("/peerjs", peerServer);
 
 app.get("/", (req: Request, res: Response) => {

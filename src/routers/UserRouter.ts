@@ -12,12 +12,12 @@ import { authenticateToken } from "../middlewares/AuthMiddleware";
 
 const userRouter = express.Router();
 
-userRouter.post("/users/register", handleRegister);
-userRouter.post("/users/login", handleLogin);
-userRouter.post("/users", authenticateToken, handleCreateUser);
-userRouter.get("/users/id/:id", authenticateToken, handleGetUser);
-userRouter.get("/users/all", authenticateToken, handleGetAllUsers);
-userRouter.get("/users/email/:email", authenticateToken, handleGetUserByEmail);
-userRouter.put("/users/:id", authenticateToken, handleEditUser);
+userRouter.post("/register", handleRegister);
+userRouter.post("/login", handleLogin);
+userRouter.post("/", authenticateToken, handleCreateUser);
+userRouter.get("/id/:id", authenticateToken, handleGetUser);
+userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.get("/email/:email", authenticateToken, handleGetUserByEmail);
+userRouter.put("/:id", authenticateToken, handleEditUser);
 
 export default userRouter;
