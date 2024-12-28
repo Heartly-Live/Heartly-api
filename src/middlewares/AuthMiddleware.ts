@@ -26,3 +26,7 @@ export function authenticateToken(
 export function generateToken(payload: object) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 }
+
+export function generateNonce(): string {
+  return Math.floor(Math.random() * 1000000).toString();
+}
