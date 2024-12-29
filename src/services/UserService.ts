@@ -8,7 +8,12 @@ export async function createUser(data: {
   username: string;
   walletAddress: string;
 }) {
-  const user = userRepository.create({ ...data });
+  const newNonce: string = Math.floor(Math.random() * 1000000).toString();
+  const userData: { username: string; walletAddress: string; nonce: string } = {
+    ...data,
+    nonce: newNonce,
+  };
+  const user = userRepository.create(userData);
   return userRepository.save(user);
 }
 
@@ -22,6 +27,7 @@ export async function getAllUsers() {
 
 export async function editUser(id: string, data: Partial<User>) {
   if (data.walletAddress) delete data.walletAddress;
+  if (data.nonce) delete data.nonce;
   await userRepository.update(id, data);
   return userRepository.findOneBy({ id });
 }

@@ -4,20 +4,13 @@ import {
   handleGetUser,
   handleEditUser,
   handleGetAllUsers,
-  handleGetUserByEmail,
-  handleRegister,
-  handleLogin,
 } from "../controllers/UserController";
-import { authenticateToken } from "../middlewares/AuthMiddleware";
 
 const userRouter = express.Router();
 
-userRouter.post("/register", handleRegister);
-userRouter.post("/login", handleLogin);
-userRouter.post("/", authenticateToken, handleCreateUser);
-userRouter.get("/id/:id", authenticateToken, handleGetUser);
-userRouter.get("/all", authenticateToken, handleGetAllUsers);
-userRouter.get("/email/:email", authenticateToken, handleGetUserByEmail);
-userRouter.put("/:id", authenticateToken, handleEditUser);
+userRouter.post("/", handleCreateUser);
+userRouter.get("/id/:id", handleGetUser);
+userRouter.get("/all", handleGetAllUsers);
+userRouter.put("/:id", handleEditUser);
 
 export default userRouter;

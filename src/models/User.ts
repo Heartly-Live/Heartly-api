@@ -17,7 +17,7 @@ export class User {
   @Column("decimal", { precision: 10, scale: 2, default: 0 })
   videoCallRate: number;
 
-  @Column("varchar", { default: () => "FLOOR(RANDOM()*1000000) :: text" })
+  @Column("varchar")
   nonce!: string;
 
   @Column({ default: "inactive" })

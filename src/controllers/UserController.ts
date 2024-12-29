@@ -18,7 +18,7 @@ export async function handleCreateUser(req: Request, res: Response) {
 
 export async function handleGetUser(req: Request, res: Response) {
   try {
-    const user = await getUser(parseInt(req.params.id, 10));
+    const user = await getUser(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
@@ -38,7 +38,7 @@ export async function handleGetAllUsers(req: Request, res: Response) {
 
 export async function handleEditUser(req: Request, res: Response) {
   try {
-    const updatedUser = await editUser(parseInt(req.params.id, 10), req.body);
+    const updatedUser = await editUser(req.params.id, req.body);
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
     res.json(updatedUser);
   } catch (error) {
