@@ -13,13 +13,16 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
+    "ethereumjs-util": "^7.1.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.5",
     "peer": "^1.0.2",
     "peerjs": "^1.5.4",
     "reflect-metadata": "^0.2.2",
+    "siwe": "^2.3.2",
     "socket.io": "^4.8.1",
     "typeorm": "^0.3.20",
     "uuid": "^11.0.3"

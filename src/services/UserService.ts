@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import { AppDataSource } from "../db/AppDataSource";
 import { User } from "../models/User";
+import crypto from "crypto";
 
 const userRepository: Repository<User> = AppDataSource.getRepository(User);
 
@@ -8,7 +9,7 @@ export async function createUser(data: {
   username: string;
   walletAddress: string;
 }) {
-  const newNonce: string = Math.floor(Math.random() * 1000000).toString();
+  const newNonce: string = crypto.randomBytes(16).toString("hex");
   const userData: { username: string; walletAddress: string; nonce: string } = {
     ...data,
     nonce: newNonce,

@@ -5,12 +5,13 @@ import {
   handleEditUser,
   handleGetAllUsers,
 } from "../controllers/UserController";
+import { authenticateToken } from "../middlewares/AuthMiddleware";
 
 const userRouter = express.Router();
 
 userRouter.post("/", handleCreateUser);
-userRouter.get("/id/:id", handleGetUser);
-userRouter.get("/all", handleGetAllUsers);
-userRouter.put("/:id", handleEditUser);
+userRouter.get("/id/:id", authenticateToken, handleGetUser);
+userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.put("/:id", authenticateToken, handleEditUser);
 
 export default userRouter;

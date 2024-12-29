@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import dotenv from "dotenv";
 import userRouter from "./routers/UserRouter";
 import authRouter from "./routers/AuthRouter";
@@ -7,8 +7,8 @@ import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketServer } from "socket.io";
 import { ExpressPeerServer } from "peer";
 import * as path from "path";
-import { v4 as uuidv4 } from "uuid";
 import { authenticateToken } from "./middlewares/AuthMiddleware";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -19,21 +19,37 @@ const io: SocketServer = new SocketServer(server);
 const peerServer = ExpressPeerServer(server);
 
 app.use("/auth", express.json(), authRouter);
-app.use("/users", express.json(), authenticateToken, userRouter);
+app.use("/users", express.json(), userRouter);
 app.use("/peerjs", authenticateToken, peerServer);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
-io.on("connection", (socket) => {
-  socket.on("join-room", (roomId, userId) => {
-    socket.join(roomId);
-    socket.to(roomId).emit("user-connected", userId);
+let onlineUsers = new Map<string, string>();
 
-    socket.on("disconnect", () => {
-      socket.to(roomId).emit("user-disconnected", userId);
-    });
+io.on("connection", (socket) => {
+  console.log("User online on socket:", socket.id);
+
+  socket.on("join", ({ username }) => {
+    onlineUsers.set(username, socket.id);
+    console.log(`Set ${username} as ${onlineUsers.get(username)}`);
+  });
+
+  socket.on("request-call", ({ username }) => {
+    console.log(`Call request for ${username}`);
+    if (onlineUsers.has(username)) {
+      const roomId = uuidv4();
+      console.log(`${socket.id} joined ${roomId}`);
+      socket.join(roomId);
+      socket
+        .to(onlineUsers.get(username) || "")
+        .emit("request-call", { roomId });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnect:", socket.id);
   });
 });
 
