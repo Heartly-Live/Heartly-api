@@ -11,7 +11,7 @@ const userRouter = express.Router();
 
 userRouter.post("/", handleCreateUser);
 userRouter.get("/id/:id", authenticateToken, handleGetUser);
-userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.get("/all", handleGetAllUsers);
 userRouter.put("/:id", authenticateToken, handleEditUser);
 
 export default userRouter;

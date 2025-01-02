@@ -9,6 +9,7 @@ import { ExpressPeerServer } from "peer";
 import * as path from "path";
 import { authenticateToken } from "./middlewares/AuthMiddleware";
 import { v4 as uuidv4 } from "uuid";
+import cors from "cors";
 
 dotenv.config();
 
@@ -18,8 +19,10 @@ const server: HTTPServer = createServer(app);
 const io: SocketServer = new SocketServer(server);
 const peerServer = ExpressPeerServer(server);
 
-app.use("/auth", express.json(), authRouter);
-app.use("/users", express.json(), userRouter);
+app.use(cors({ origin: "http://localhost:5173" }));
+app.use(express.json());
+app.use("/auth", authRouter);
+app.use("/users", userRouter);
 app.use("/peerjs", authenticateToken, peerServer);
 
 app.get("/", (req, res) => {
