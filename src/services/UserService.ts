@@ -18,17 +18,40 @@ export async function createUser(data: {
   return userRepository.save(user);
 }
 
-export async function getUser(id: string) {
-  return userRepository.findOneBy({ id });
+export async function getUser(walletAddress: string) {
+  return userRepository.findOne({
+    where: { walletAddress },
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+    },
+  });
 }
 
 export async function getAllUsers() {
-  return userRepository.find();
+  return userRepository.find({
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+    },
+  });
 }
 
-export async function editUser(id: string, data: Partial<User>) {
+export async function editUser(walletAddress: string, data: Partial<User>) {
   if (data.walletAddress) delete data.walletAddress;
   if (data.nonce) delete data.nonce;
-  await userRepository.update(id, data);
-  return userRepository.findOneBy({ id });
+  await userRepository.update({ walletAddress }, { ...data });
+  return userRepository.findOne({
+    where: { walletAddress },
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+    },
+  });
 }

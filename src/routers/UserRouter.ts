@@ -10,8 +10,8 @@ import { authenticateToken } from "../middlewares/AuthMiddleware";
 const userRouter = express.Router();
 
 userRouter.post("/", handleCreateUser);
-userRouter.get("/id/:id", authenticateToken, handleGetUser);
-userRouter.get("/all", handleGetAllUsers);
-userRouter.put("/:id", authenticateToken, handleEditUser);
+userRouter.get("/wallet/:walletAddress", authenticateToken, handleGetUser);
+userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.put("/:walletAddress", authenticateToken, handleEditUser);
 
 export default userRouter;
