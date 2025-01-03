@@ -23,6 +23,19 @@ export function authenticateToken(
   });
 }
 
+export function authenticateSocketToken(authHeader: string) {
+  const token = authHeader && authHeader.split(" ")[1];
+
+  let userDetails;
+  if (!token) userDetails = undefined;
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) userDetails = undefined;
+    userDetails = user;
+  });
+  return userDetails;
+}
+
 export function generateToken(payload: object) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 }

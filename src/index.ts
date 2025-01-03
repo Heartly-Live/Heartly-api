@@ -6,55 +6,34 @@ import { AppDataSource } from "./db/AppDataSource";
 import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketServer } from "socket.io";
 import { ExpressPeerServer } from "peer";
-import * as path from "path";
-import { authenticateToken } from "./middlewares/AuthMiddleware";
-import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
+import socketSetup from "./socketSetup";
+import { authenticateSocketToken } from "./middlewares/AuthMiddleware";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 const server: HTTPServer = createServer(app);
-const io: SocketServer = new SocketServer(server);
+const io: SocketServer = new SocketServer(server, {
+  cors: { origin: "http://localhost:5173" },
+});
 const peerServer = ExpressPeerServer(server);
 
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
-app.use("/peerjs", authenticateToken, peerServer);
+app.use("/peerjs", peerServer);
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  const user = authenticateSocketToken(token);
+  if (!user) next(new Error("Invalid authentication token"));
+  next();
 });
 
-let onlineUsers = new Map<string, string>();
-
-io.on("connection", (socket) => {
-  console.log("User online on socket:", socket.id);
-
-  socket.on("join", ({ username }) => {
-    onlineUsers.set(username, socket.id);
-    console.log(`Set ${username} as ${onlineUsers.get(username)}`);
-  });
-
-  socket.on("request-call", ({ username }) => {
-    console.log(`Call request for ${username}`);
-    if (onlineUsers.has(username)) {
-      const roomId = uuidv4();
-      console.log(`${socket.id} joined ${roomId}`);
-      socket.join(roomId);
-      socket
-        .to(onlineUsers.get(username) || "")
-        .emit("request-call", { roomId });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnect:", socket.id);
-  });
-});
+socketSetup(io);
 
 AppDataSource.initialize()
   .then(() => {
