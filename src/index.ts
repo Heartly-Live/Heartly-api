@@ -16,22 +16,24 @@ const app: Express = express();
 const port = process.env.PORT || 3000;
 const server: HTTPServer = createServer(app);
 const io: SocketServer = new SocketServer(server, {
+  path: "/socket/",
   cors: { origin: "http://localhost:5173" },
 });
-const peerServer = ExpressPeerServer(server);
+const peerServer = ExpressPeerServer(server, {
+  path: "/peer",
+});
 
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
-app.use("/peerjs", peerServer);
 
-io.use((socket, next) => {
+/* io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   const user = authenticateSocketToken(token);
   if (!user) next(new Error("Invalid authentication token"));
   next();
-});
+});*/
 
 socketSetup(io);
 
