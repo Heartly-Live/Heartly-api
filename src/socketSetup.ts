@@ -12,15 +12,32 @@ export default function socketSetup(io: SocketServer) {
       console.log(`Set ${username} as ${onlineUsers.get(username)}`);
     });
 
-    socket.on("request-call", ({ username }) => {
-      console.log(`Call request for ${username}`);
-      if (onlineUsers.has(username)) {
+    socket.on("call-accepted", ({ username, caller, roomId }) => {
+      console.log(`Call accepted by ${username}`);
+      socket.join(roomId);
+      socket.to(roomId).emit("call-accepted", { username });
+    });
+
+    socket.on("call-denied", async ({ username, caller, roomId }) => {
+      console.log(`Call denied by ${username}`);
+      socket.to(roomId).emit("call-denied", { username });
+      await io.sockets.sockets
+        .get(onlineUsers.get(caller) || "")
+        ?.leave(roomId);
+    });
+
+    socket.on("request-call", ({ reciever, username }) => {
+      console.log(`Call request for ${reciever} from ${username}`);
+      if (onlineUsers.has(reciever)) {
         const roomId = uuidv4();
         console.log(`${socket.id} joined ${roomId}`);
         socket.join(roomId);
         socket
-          .to(onlineUsers.get(username) || "")
-          .emit("request-call", { roomId });
+          .to(onlineUsers.get(reciever) || "")
+          .emit("call-request", { caller: username, roomId });
+      } else {
+        console.log("Cant find requested user to call");
+        socket.emit("User-not-found");
       }
     });
 
