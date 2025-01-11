@@ -30,20 +30,18 @@ app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/peerjs", peerServer);
 
-/*
-io.use((socket, next) => {
+io.use((socket: ExtendedSocket, next) => {
   const token = socket.handshake.auth.token;
-  const user = authenticateSocketToken(token);
-  if (!user) {
+  const authenticatedUser = authenticateSocketToken(token);
+  if (!authenticatedUser) {
     console.log("Couldnt authenticate socket");
     next(new Error("Invalid authentication token"));
   } else {
-    console.log("Authenticated:", user);
-    //socket.user = user;
+    console.log("Authenticated");
+    socket.user = authenticatedUser;
   }
   next();
 });
-*/
 socketSetup(io);
 
 AppDataSource.initialize()
