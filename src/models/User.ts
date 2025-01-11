@@ -20,6 +20,9 @@ export class User {
   @Column("varchar")
   nonce!: string;
 
+  @Column("varchar", { default: "user" })
+  role!: "user" | "listener";
+
   @Column({ default: "inactive" })
   status!: "active" | "inactive";
 }

@@ -26,6 +26,7 @@ export async function getUser(walletAddress: string) {
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      role: true,
     },
   });
 }
@@ -37,6 +38,7 @@ export async function getAllUsers() {
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      role: true,
     },
   });
 }
@@ -52,6 +54,57 @@ export async function editUser(walletAddress: string, data: Partial<User>) {
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      role: true,
+    },
+  });
+}
+
+export async function getAllListeners() {
+  return userRepository.find({
+    where: { role: "listener" },
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+      role: true,
+    },
+  });
+}
+
+export async function getAllActiveListeners() {
+  return userRepository.find({
+    where: { role: "listener", status: "active" },
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+      role: true,
+    },
+  });
+}
+
+export async function setUserOnline(walletAddress: string) {
+  await userRepository.update({ walletAddress }, { status: "active" });
+  return userRepository.findOne({
+    where: { walletAddress },
+    select: {
+      username: true,
+      walletAddress: true,
+      status: true,
+    },
+  });
+}
+
+export async function setUserOffline(walletAddress: string) {
+  await userRepository.update({ walletAddress }, { status: "inactive" });
+  return userRepository.findOne({
+    where: { walletAddress },
+    select: {
+      username: true,
+      walletAddress: true,
+      status: true,
     },
   });
 }

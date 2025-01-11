@@ -13,11 +13,11 @@ import { authenticateSocketToken } from "./middlewares/AuthMiddleware";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 const server: HTTPServer = createServer(app);
-const io: SocketServer = new SocketServer(server, {
+const io: SocketServer = new SocketServer(8001, {
   path: "/socket/",
-  cors: { origin: "http://localhost:5173" },
+  cors: { origin: ["http://localhost:5173", "https://localhost:3000"] },
 });
 const peerServer = ExpressPeerServer(server, {
   path: "/peer",
@@ -27,6 +27,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
+app.use("/peerjs", peerServer);
 
 /* io.use((socket, next) => {
   const token = socket.handshake.auth.token;

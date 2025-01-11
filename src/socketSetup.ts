@@ -12,10 +12,10 @@ export default function socketSetup(io: SocketServer) {
       console.log(`Set ${username} as ${onlineUsers.get(username)}`);
     });
 
-    socket.on("call-accepted", ({ username, caller, roomId }) => {
+    socket.on("call-accepted", async ({ username, caller, roomId, peerId }) => {
       console.log(`Call accepted by ${username}`);
       socket.join(roomId);
-      socket.to(roomId).emit("call-accepted", { username });
+      socket.to(roomId).emit("call-accepted", { username, peerId });
     });
 
     socket.on("call-denied", async ({ username, caller, roomId }) => {
