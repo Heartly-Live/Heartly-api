@@ -9,6 +9,7 @@ import { ExpressPeerServer } from "peer";
 import cors from "cors";
 import socketSetup from "./socketSetup";
 import { authenticateSocketToken } from "./middlewares/AuthMiddleware";
+import ExtendedSocket from "./interfaces/ExtendedSocket";
 
 dotenv.config();
 
@@ -29,13 +30,20 @@ app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/peerjs", peerServer);
 
-/* io.use((socket, next) => {
+/*
+io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   const user = authenticateSocketToken(token);
-  if (!user) next(new Error("Invalid authentication token"));
+  if (!user) {
+    console.log("Couldnt authenticate socket");
+    next(new Error("Invalid authentication token"));
+  } else {
+    console.log("Authenticated:", user);
+    //socket.user = user;
+  }
   next();
-});*/
-
+});
+*/
 socketSetup(io);
 
 AppDataSource.initialize()

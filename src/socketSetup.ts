@@ -1,4 +1,5 @@
 import { Server as SocketServer } from "socket.io";
+import ExtendedSocket from "./interfaces/ExtendedSocket";
 import { v4 as uuidv4 } from "uuid";
 
 export default function socketSetup(io: SocketServer) {
