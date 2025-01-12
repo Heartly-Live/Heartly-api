@@ -33,7 +33,7 @@ export default function socketSetup(io: SocketServer) {
 
     socket.on("request-call", ({ reciever, username }) => {
       console.log(`Call request for ${reciever} from ${username}`);
-      if (onlineUsers.has(reciever)) {
+      if (onlineUsers.has(reciever) && reciever !== username) {
         const roomId = uuidv4();
         console.log(`${socket.id} joined ${roomId}`);
         socket.join(roomId);
