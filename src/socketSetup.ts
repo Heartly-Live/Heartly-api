@@ -1,13 +1,15 @@
 import { Server as SocketServer } from "socket.io";
 import ExtendedSocket from "./interfaces/ExtendedSocket";
 import { v4 as uuidv4 } from "uuid";
+import { setUserOnline, setUserOffline } from "./services/UserService";
 
 export default function socketSetup(io: SocketServer) {
   let onlineUsers = new Map<string, string>();
 
-  io.on("connection", (socket: ExtendedSocket) => {
-    if (socket.user?.username) {
+  io.on("connection", async (socket: ExtendedSocket) => {
+    if (socket.user?.username && socket.user?.walletAddress) {
       onlineUsers.set(socket.user.username, socket.id);
+      await setUserOnline(socket.user.walletAddress);
       console.log(
         `Set ${socket.user.username} as ${onlineUsers.get(socket.user.username)}`,
       );
@@ -44,9 +46,12 @@ export default function socketSetup(io: SocketServer) {
       }
     });
 
-    socket.on("disconnect", () => {
-      onlineUsers.delete(socket.user?.username || "");
-      console.log("User disconnect:", socket.id);
+    socket.on("disconnect", async () => {
+      if (socket.user?.username && socket.user?.walletAddress) {
+        onlineUsers.delete(socket.user?.username || "");
+        await setUserOffline(socket.user?.walletAddress);
+        console.log("User disconnect:", socket.id);
+      }
     });
   });
 }
