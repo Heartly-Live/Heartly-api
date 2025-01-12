@@ -5,13 +5,15 @@ import { v4 as uuidv4 } from "uuid";
 export default function socketSetup(io: SocketServer) {
   let onlineUsers = new Map<string, string>();
 
-  io.on("connection", (socket) => {
-    console.log("User online on socket:", socket.id);
-
-    socket.on("join", ({ username }) => {
-      onlineUsers.set(username, socket.id);
-      console.log(`Set ${username} as ${onlineUsers.get(username)}`);
-    });
+  io.on("connection", (socket: ExtendedSocket) => {
+    if (socket.user?.username) {
+      onlineUsers.set(socket.user.username, socket.id);
+      console.log(
+        `Set ${socket.user.username} as ${onlineUsers.get(socket.user.username)}`,
+      );
+    } else {
+      socket.disconnect();
+    }
 
     socket.on("call-accepted", async ({ username, caller, roomId, peerId }) => {
       console.log(`Call accepted by ${username}`);
@@ -43,6 +45,7 @@ export default function socketSetup(io: SocketServer) {
     });
 
     socket.on("disconnect", () => {
+      onlineUsers.delete(socket.user?.username || "");
       console.log("User disconnect:", socket.id);
     });
   });
