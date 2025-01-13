@@ -14,9 +14,10 @@ import ExtendedSocket from "./interfaces/ExtendedSocket";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 8000;
+const httpPort = parseInt(process.env.PORT || "8000");
+const socketPort = parseInt(process.env.PORT || "8001");
 const server: HTTPServer = createServer(app);
-const io: SocketServer = new SocketServer(8001, {
+const io: SocketServer = new SocketServer(socketPort, {
   path: "/socket/",
   cors: { origin: ["http://localhost:5173", "https://localhost:3000"] },
 });
@@ -29,6 +30,10 @@ app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/peerjs", peerServer);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to the heartly api" });
+});
 
 io.use((socket: ExtendedSocket, next) => {
   const token = socket.handshake.auth.token;
@@ -46,6 +51,8 @@ socketSetup(io);
 
 AppDataSource.initialize()
   .then(() => {
-    server.listen(port, () => console.log(`Server up and running on ${port}`));
+    server.listen(httpPort, () =>
+      console.log(`Server up and running on ${httpPort}`),
+    );
   })
   .catch((error) => console.log("Error initializing datasource:", error));
