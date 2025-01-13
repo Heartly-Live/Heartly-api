@@ -25,7 +25,15 @@ const peerServer = ExpressPeerServer(server, {
   path: "/peer",
 });
 
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://heartly.live",
+    ],
+  }),
+);
 app.use(express.json());
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
