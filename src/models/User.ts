@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { UserLanguage } from "./UserLanguage";
 
 @Entity()
 export class User {
@@ -25,4 +26,7 @@ export class User {
 
   @Column({ default: "inactive" })
   status!: "active" | "inactive";
+
+  @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.user)
+  userLanguages!: UserLanguage[];
 }
