@@ -165,32 +165,26 @@ export async function editUser(
   return userHelper(savedUser);
 }
 
-export async function getAllListeners() {
-  return userRepository.find({
-    where: { role: "listener" },
-    select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
-    },
-  });
-}
+export async function getAllListeners(
+  languages: string[] = [],
+  //specialities?: string[],
+  status?: string,
+) {
+  const query = userRepository
+    .createQueryBuilder("user")
+    .leftJoinAndSelect("user.userLanguages", "userLanguage")
+    .leftJoinAndSelect("userLanguage.language", "language");
 
-export async function getAllActiveListeners() {
-  const user = userRepository.find({
-    where: { role: "listener", status: "active" },
-    select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
-    },
-  });
+  if (languages.length > 0) {
+    query.andWhere("language.name IN (...languages)", { languages });
+  }
+
+  query.andWhere("user.role LIKE 'listener'");
+
+  if (status === "active") {
+    query.andWhere("user.status like 'active'");
+  }
+  return query.getMany();
 }
 
 export async function setUserOnline(walletAddress: string) {

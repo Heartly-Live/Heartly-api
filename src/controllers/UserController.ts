@@ -5,15 +5,19 @@ import {
   editUser,
   getAllUsers,
   getAllListeners,
-  getAllActiveListeners,
-  setUserOnline,
-  setUserOffline,
 } from "../services/UserService";
 
 export async function handleCreateUser(req: Request, res: Response) {
   try {
-    const { username, walletAddress } = req.body;
-    const newUser = await createUser({ username, walletAddress });
+    const { username, walletAddress, voiceCallRate, videoCallRate, languages } =
+      req.body;
+    const newUser = await createUser({
+      username,
+      walletAddress,
+      voiceCallRate,
+      videoCallRate,
+      languages,
+    });
     res.status(201).json(newUser);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -52,20 +56,12 @@ export async function handleEditUser(req: Request, res: Response) {
 
 export async function handleGetAllListeners(req: Request, res: Response) {
   try {
-    const listeners = await getAllListeners();
+    const listeners = await getAllListeners(
+      req.body.languages,
+      req.body.status,
+    );
     if (!listeners)
       return res.status(404).json({ error: "Listerners not found" });
-    res.json(listeners);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-}
-
-export async function handleGetAllActiveListeners(req: Request, res: Response) {
-  try {
-    const listeners = await getAllActiveListeners();
-    if (!listeners)
-      return res.status(404).json({ error: "Active listerners not found" });
     res.json(listeners);
   } catch (error) {
     res.status(400).json({ error: error.message });
