@@ -11,6 +11,26 @@ const userLanguageRepository: Repository<UserLanguage> =
 const languageRepository: Repository<Language> =
   AppDataSource.getRepository(Language);
 
+const userHelper = (
+  user: User,
+): {
+  username: string;
+  walletAddress: string;
+  voicecallRate: number;
+  videoCallRate: number;
+  languages: string[];
+  role: string;
+} => {
+  return {
+    username: user.username,
+    walletAddress: user.walletAddress,
+    voicecallRate: user.voiceCallRate,
+    videoCallRate: user.videoCallRate,
+    languages: user.userLanguages.map((ul) => ul.language.name),
+    role: user.role,
+  };
+};
+
 export async function createUser(data: {
   username: string;
   walletAddress: string;
@@ -39,16 +59,22 @@ export async function createUser(data: {
         where: { name: languageName },
       });
       if (language) {
-        userLanguageRepository.create({ user, language });
+        const userLanguage = userLanguageRepository.create({
+          user,
+          language,
+        });
+        user.userLanguages.push(userLanguage);
       }
     }
   }
-  return userRepository.save(user);
+  const savedUser = await userRepository.save(user);
+  return userHelper(savedUser);
 }
 
 export async function getUser(walletAddress: string) {
-  return userRepository.findOne({
+  const user = await userRepository.findOne({
     where: { walletAddress },
+    relations: ["userLanguages.language"],
     select: {
       username: true,
       walletAddress: true,
@@ -58,18 +84,37 @@ export async function getUser(walletAddress: string) {
       role: true,
     },
   });
+
+  if (!user) {
+    throw new Error("No user found");
+  } else {
+    return userHelper(user);
+  }
 }
 
 export async function getAllUsers() {
-  return userRepository.find({
+  const users = await userRepository.find({
     select: {
       username: true,
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      userLanguages: true,
       role: true,
     },
   });
+
+  const data = [];
+
+  if (!users) {
+    throw new Error("Users not found");
+  } else {
+    for (const user of users) {
+      data.push(userHelper(user));
+    }
+  }
+
+  return data;
 }
 
 export async function editUser(walletAddress: string, data: Partial<User>) {
@@ -83,6 +128,7 @@ export async function editUser(walletAddress: string, data: Partial<User>) {
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      userLanguages: true,
       role: true,
     },
   });
@@ -96,19 +142,21 @@ export async function getAllListeners() {
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      userLanguages: true,
       role: true,
     },
   });
 }
 
 export async function getAllActiveListeners() {
-  return userRepository.find({
+  const user = userRepository.find({
     where: { role: "listener", status: "active" },
     select: {
       username: true,
       walletAddress: true,
       voiceCallRate: true,
       videoCallRate: true,
+      userLanguages: true,
       role: true,
     },
   });
