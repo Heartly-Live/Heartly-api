@@ -117,11 +117,38 @@ export async function getAllUsers() {
   return data;
 }
 
-export async function editUser(walletAddress: string, data: Partial<User>) {
-  if (data.walletAddress) delete data.walletAddress;
-  if (data.nonce) delete data.nonce;
+export async function editUser(
+  walletAddress: string,
+  data: {
+    username?: string;
+    voiceCallRate?: number;
+    videoCallRate?: number;
+    languages?: string[];
+    userLanguages?: UserLanguage[];
+  },
+) {
+  data.userLanguages = [];
+  const user = await userRepository.findOne({ where: { walletAddress } });
+  if (user && data.languages) {
+    userLanguageRepository.delete({ user });
+    for (const languageName of data.languages) {
+      const language = await languageRepository.findOne({
+        where: { name: languageName },
+      });
+      if (language) {
+        const userLanguage = userLanguageRepository.create({
+          user,
+          language,
+        });
+        data.userLanguages.push(userLanguage);
+      }
+    }
+    delete data.languages;
+  } else {
+    throw new Error("User not found");
+  }
   await userRepository.update({ walletAddress }, { ...data });
-  return userRepository.findOne({
+  const savedUser = await userRepository.findOne({
     where: { walletAddress },
     select: {
       username: true,
@@ -132,6 +159,10 @@ export async function editUser(walletAddress: string, data: Partial<User>) {
       role: true,
     },
   });
+  if (!savedUser) {
+    throw new Error("Could not update user");
+  }
+  return userHelper(savedUser);
 }
 
 export async function getAllListeners() {
