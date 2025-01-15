@@ -10,6 +10,8 @@ export class UserLanguage {
   @ManyToOne(() => User, (user) => user.userLanguages)
   user!: User;
 
-  @ManyToOne(() => Language, (language) => language.userLanguages)
+  @ManyToOne(() => Language, (language) => language.userLanguages, {
+    cascade: ["insert", "update"],
+  })
   language!: Language;
 }

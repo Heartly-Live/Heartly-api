@@ -27,6 +27,8 @@ export class User {
   @Column({ default: "inactive" })
   status!: "active" | "inactive";
 
-  @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.user)
+  @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.user, {
+    cascade: ["insert", "update"],
+  })
   userLanguages!: UserLanguage[];
 }
