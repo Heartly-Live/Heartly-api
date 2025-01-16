@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  checkUsername,
   createUser,
   getUserByWalletAddress,
   getUserByUsername,
@@ -7,6 +8,17 @@ import {
   getAllUsers,
   getAllListeners,
 } from "../services/UserService";
+
+export async function handleCheckUsername(req: Request, res: Response) {
+  try {
+    const usernameAvailable = await checkUsername(req.params.username);
+    if (usernameAvailable) {
+      res.status(200).json({ avaiable: usernameAvailable });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
 
 export async function handleCreateUser(req: Request, res: Response) {
   try {

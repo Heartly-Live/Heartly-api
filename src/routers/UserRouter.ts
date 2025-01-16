@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  handleCheckUsername,
   handleCreateUser,
   handleGetUserByWalletAddress,
   handleGetUserByUsername,
@@ -11,6 +12,7 @@ import { authenticateToken } from "../middlewares/AuthMiddleware";
 
 const userRouter = express.Router();
 
+userRouter.get("/check-username/:username", handleCheckUsername);
 userRouter.post("/", handleCreateUser);
 userRouter.get(
   "/wallet/:walletAddress",

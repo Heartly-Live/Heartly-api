@@ -28,6 +28,15 @@ const userHelper = (
   };
 };
 
+export async function checkUsername(username: string) {
+  const user = await userRepository.findOne({ where: { username } });
+  if (!user) {
+    return true;
+  } else {
+    throw new Error("User already exists");
+  }
+}
+
 export async function createUser(data: {
   username: string;
   walletAddress: string;
