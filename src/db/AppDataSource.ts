@@ -1,6 +1,5 @@
 import { DataSource } from "typeorm";
 import { User } from "../models/User";
-import { UserLanguage } from "../models/UserLanguage";
 import { Language } from "../models/Language";
 import dotenv from "dotenv";
 
@@ -19,6 +18,6 @@ export const AppDataSource = new DataSource({
   username: dbUsername,
   password: dbPassword,
   database: dbDatabse,
-  entities: [User, UserLanguage, Language],
+  entities: [User, Language],
   synchronize: true,
 });

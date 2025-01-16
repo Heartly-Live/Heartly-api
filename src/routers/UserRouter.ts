@@ -14,28 +14,16 @@ const userRouter = express.Router();
 userRouter.post("/", handleCreateUser);
 userRouter.get(
   "/wallet/:walletAddress",
-  //authenticateToken,
+  authenticateToken,
   handleGetUserByWalletAddress,
 );
 userRouter.get(
   "/username/:username",
-  //authenticateToken,
+  authenticateToken,
   handleGetUserByUsername,
 );
-userRouter.get(
-  "/all",
-  //authenticateToken,
-  handleGetAllUsers,
-);
-userRouter.put(
-  "/:walletAddress",
-  //authenticateToken,
-  handleEditUser,
-);
-userRouter.get(
-  "/listener",
-  //authenticateToken,
-  handleGetAllListeners,
-);
+userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.put("/:walletAddress", authenticateToken, handleEditUser);
+userRouter.get("/listener", authenticateToken, handleGetAllListeners);
 
 export default userRouter;
