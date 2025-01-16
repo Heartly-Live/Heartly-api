@@ -135,30 +135,43 @@ export async function editUser(
     languages?: string[];
   },
 ) {
-  const user = await userRepository.findOne({ where: { walletAddress } });
+  const user = await userRepository.findOne({
+    where: { walletAddress },
+    relations: ["languages"],
+  });
   const languages: Language[] = [];
-
-  if (user && data.languages) {
-    for (const languageName of data.languages) {
-      const language = await languageRepository.findOne({
-        where: { name: languageName },
-      });
-      if (language) languages.push(language);
+  if (!user) {
+    throw new Error("Cannot find user");
+  } else {
+    if (data.languages) {
+      for (const languageName of data.languages) {
+        const language = await languageRepository.findOne({
+          where: { name: languageName },
+        });
+        if (language) languages.push(language);
+      }
+      delete data.languages;
+      user.languages = languages;
     }
-    delete data.languages;
+    if (data.voiceCallRate) user.voiceCallRate = data.voiceCallRate;
+    if (data.videoCallRate) user.videoCallRate = data.videoCallRate;
+    if (data.username) user.username = data.username;
   }
-  await userRepository.update({ walletAddress }, { ...data, languages });
+  await userRepository.save(user);
   const savedUser = await userRepository.findOne({
     where: { walletAddress },
+    relations: ["languages"],
     select: {
       nonce: false,
       id: false,
       status: false,
     },
   });
+
   if (!savedUser) {
-    throw new Error("Could not update user");
+    throw new Error("Cannot update user");
   }
+
   return userHelper(savedUser);
 }
 
