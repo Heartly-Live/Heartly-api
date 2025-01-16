@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import {
   createUser,
-  getUser,
+  getUserByWalletAddress,
+  getUserByUsername,
   editUser,
   getAllUsers,
   getAllListeners,
@@ -24,9 +25,22 @@ export async function handleCreateUser(req: Request, res: Response) {
   }
 }
 
-export async function handleGetUser(req: Request, res: Response) {
+export async function handleGetUserByWalletAddress(
+  req: Request,
+  res: Response,
+) {
   try {
-    const user = await getUser(req.params.walletAddress);
+    const user = await getUserByWalletAddress(req.params.walletAddress);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+export async function handleGetUserByUsername(req: Request, res: Response) {
+  try {
+    const user = await getUserByUsername(req.params.walletAddress);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {

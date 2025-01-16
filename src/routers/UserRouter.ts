@@ -1,7 +1,8 @@
 import express from "express";
 import {
   handleCreateUser,
-  handleGetUser,
+  handleGetUserByWalletAddress,
+  handleGetUserByUsername,
   handleEditUser,
   handleGetAllUsers,
   handleGetAllListeners,
@@ -11,7 +12,16 @@ import { authenticateToken } from "../middlewares/AuthMiddleware";
 const userRouter = express.Router();
 
 userRouter.post("/", handleCreateUser);
-userRouter.get("/wallet/:walletAddress", authenticateToken, handleGetUser);
+userRouter.get(
+  "/wallet/:walletAddress",
+  authenticateToken,
+  handleGetUserByWalletAddress,
+);
+userRouter.get(
+  "/username/:username",
+  authenticateToken,
+  handleGetUserByUsername,
+);
 userRouter.get("/all", authenticateToken, handleGetAllUsers);
 userRouter.put("/:walletAddress", authenticateToken, handleEditUser);
 userRouter.get("/listener", authenticateToken, handleGetAllListeners);

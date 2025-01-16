@@ -71,9 +71,30 @@ export async function createUser(data: {
   return userHelper(savedUser);
 }
 
-export async function getUser(walletAddress: string) {
+export async function getUserByWalletAddress(walletAddress: string) {
   const user = await userRepository.findOne({
     where: { walletAddress },
+    relations: ["userLanguages.language"],
+    select: {
+      username: true,
+      walletAddress: true,
+      voiceCallRate: true,
+      videoCallRate: true,
+      userLanguages: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("No user found");
+  } else {
+    return userHelper(user);
+  }
+}
+
+export async function getUserByUsername(username: string) {
+  const user = await userRepository.findOne({
+    where: { username },
     relations: ["userLanguages.language"],
     select: {
       username: true,
