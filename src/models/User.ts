@@ -1,5 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { UserLanguage } from "./UserLanguage";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  JoinTable,
+  ManyToMany,
+} from "typeorm";
+import { Language } from "./Language";
 
 @Entity()
 export class User {
@@ -27,8 +33,7 @@ export class User {
   @Column({ default: "inactive" })
   status!: "active" | "inactive";
 
-  @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.user, {
-    cascade: ["insert", "update"],
-  })
-  userLanguages!: UserLanguage[];
+  @ManyToMany(() => Language, (language) => language.users, { cascade: true })
+  @JoinTable()
+  languages!: Language[];
 }

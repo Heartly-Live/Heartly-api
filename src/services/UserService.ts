@@ -2,12 +2,9 @@ import { Repository } from "typeorm";
 import { AppDataSource } from "../db/AppDataSource";
 import { User } from "../models/User";
 import crypto from "crypto";
-import { UserLanguage } from "../models/UserLanguage";
 import { Language } from "../models/Language";
 
 const userRepository: Repository<User> = AppDataSource.getRepository(User);
-const userLanguageRepository: Repository<UserLanguage> =
-  AppDataSource.getRepository(UserLanguage);
 const languageRepository: Repository<Language> =
   AppDataSource.getRepository(Language);
 
@@ -26,7 +23,7 @@ const userHelper = (
     walletAddress: user.walletAddress,
     voicecallRate: user.voiceCallRate,
     videoCallRate: user.videoCallRate,
-    languages: user.userLanguages.map((ul) => ul.language.name),
+    languages: user.languages.map((language) => language.name),
     role: user.role,
   };
 };
@@ -36,7 +33,7 @@ export async function createUser(data: {
   walletAddress: string;
   voiceCallRate?: number;
   videoCallRate?: number;
-  languages?: [string];
+  languages?: string[];
   //specialities?: [string];
 }) {
   const newNonce: string = crypto.randomBytes(16).toString("hex");
@@ -51,22 +48,19 @@ export async function createUser(data: {
     nonce: newNonce,
   };
 
-  const user = userRepository.create(userData);
+  const languages: Language[] = [];
 
   if (data.languages) {
     for (const languageName of data.languages) {
       const language = await languageRepository.findOne({
         where: { name: languageName },
       });
-      if (language) {
-        const userLanguage = userLanguageRepository.create({
-          user,
-          language,
-        });
-        user.userLanguages.push(userLanguage);
-      }
+      if (language) languages.push(language);
     }
   }
+
+  const user = userRepository.create({ ...userData, languages });
+
   const savedUser = await userRepository.save(user);
   return userHelper(savedUser);
 }
@@ -74,14 +68,13 @@ export async function createUser(data: {
 export async function getUserByWalletAddress(walletAddress: string) {
   const user = await userRepository.findOne({
     where: { walletAddress },
-    relations: ["userLanguages.language"],
+    relations: {
+      languages: true,
+    },
     select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
+      nonce: false,
+      id: false,
+      status: false,
     },
   });
 
@@ -95,14 +88,11 @@ export async function getUserByWalletAddress(walletAddress: string) {
 export async function getUserByUsername(username: string) {
   const user = await userRepository.findOne({
     where: { username },
-    relations: ["userLanguages.language"],
+    relations: ["languages"],
     select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
+      nonce: false,
+      id: false,
+      status: false,
     },
   });
 
@@ -116,12 +106,9 @@ export async function getUserByUsername(username: string) {
 export async function getAllUsers() {
   const users = await userRepository.find({
     select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
+      nonce: false,
+      id: false,
+      status: false,
     },
   });
 
@@ -145,39 +132,27 @@ export async function editUser(
     voiceCallRate?: number;
     videoCallRate?: number;
     languages?: string[];
-    userLanguages?: UserLanguage[];
   },
 ) {
-  data.userLanguages = [];
   const user = await userRepository.findOne({ where: { walletAddress } });
+  const languages: Language[] = [];
+
   if (user && data.languages) {
-    userLanguageRepository.delete({ user });
     for (const languageName of data.languages) {
       const language = await languageRepository.findOne({
         where: { name: languageName },
       });
-      if (language) {
-        const userLanguage = userLanguageRepository.create({
-          user,
-          language,
-        });
-        data.userLanguages.push(userLanguage);
-      }
+      if (language) languages.push(language);
     }
     delete data.languages;
-  } else {
-    throw new Error("User not found");
   }
-  await userRepository.update({ walletAddress }, { ...data });
+  await userRepository.update({ walletAddress }, { ...data, languages });
   const savedUser = await userRepository.findOne({
     where: { walletAddress },
     select: {
-      username: true,
-      walletAddress: true,
-      voiceCallRate: true,
-      videoCallRate: true,
-      userLanguages: true,
-      role: true,
+      nonce: false,
+      id: false,
+      status: false,
     },
   });
   if (!savedUser) {
@@ -193,8 +168,7 @@ export async function getAllListeners(
 ) {
   const query = userRepository
     .createQueryBuilder("user")
-    .leftJoinAndSelect("user.userLanguages", "userLanguage")
-    .leftJoinAndSelect("userLanguage.language", "language");
+    .leftJoinAndSelect("user.languages", "language");
 
   if (languages.length > 0) {
     query.andWhere("language.name IN (...languages)", { languages });

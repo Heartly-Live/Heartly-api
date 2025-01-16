@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { UserLanguage } from "./UserLanguage";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
+import { User } from "./User";
 
 @Entity()
 export class Language {
@@ -9,6 +9,6 @@ export class Language {
   @Column({ unique: true })
   name!: string;
 
-  @OneToMany(() => UserLanguage, (userLanguage) => userLanguage.language)
-  userLanguages!: UserLanguage[];
+  @ManyToMany(() => User, (user) => user.languages)
+  users!: User[];
 }

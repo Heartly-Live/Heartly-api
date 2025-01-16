@@ -6,12 +6,4 @@ import { Language } from "./Language";
 export class UserLanguage {
   @PrimaryGeneratedColumn()
   id!: number;
-
-  @ManyToOne(() => User, (user) => user.userLanguages)
-  user!: User;
-
-  @ManyToOne(() => Language, (language) => language.userLanguages, {
-    cascade: ["insert", "update"],
-  })
-  language!: Language;
 }

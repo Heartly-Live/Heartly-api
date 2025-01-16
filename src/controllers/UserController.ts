@@ -40,7 +40,7 @@ export async function handleGetUserByWalletAddress(
 
 export async function handleGetUserByUsername(req: Request, res: Response) {
   try {
-    const user = await getUserByUsername(req.params.walletAddress);
+    const user = await getUserByUsername(req.params.username);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (error) {
