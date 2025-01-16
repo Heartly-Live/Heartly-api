@@ -58,7 +58,7 @@ io.use((socket: ExtendedSocket, next) => {
 socketSetup(io);
 
 AppDataSource.initialize()
-  .then(() => {
+  .then(async () => {
     server.listen(httpPort, () =>
       console.log(`Server up and running on ${httpPort}`),
     );
