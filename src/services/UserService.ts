@@ -105,6 +105,7 @@ export async function getUserByUsername(username: string) {
 
 export async function getAllUsers() {
   const users = await userRepository.find({
+    relations: ["languages"],
     select: {
       nonce: false,
       id: false,
@@ -168,18 +169,28 @@ export async function getAllListeners(
 ) {
   const query = userRepository
     .createQueryBuilder("user")
-    .leftJoinAndSelect("user.languages", "language");
+    .leftJoinAndSelect("user.languages", "language")
+    .where("user.role = :role", { role: "listener" });
 
   if (languages.length > 0) {
-    query.andWhere("language.name IN (...languages)", { languages });
+    query.andWhere("language.name IN (:...languages)", { languages });
   }
-
-  query.andWhere("user.role LIKE 'listener'");
 
   if (status === "active") {
     query.andWhere("user.status like 'active'");
   }
-  return query.getMany();
+  const listeners: User[] = await query.getMany();
+
+  const data = [];
+  if (listeners) {
+    for (const listener of listeners) {
+      data.push(userHelper(listener));
+    }
+  } else {
+    throw new Error("Listeners not found");
+  }
+
+  return data;
 }
 
 export async function setUserOnline(walletAddress: string) {
