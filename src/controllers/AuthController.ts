@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { requestNonce, verifySignature } from "../services/AuthService";
+import {
+  refreshToken,
+  requestNonce,
+  verifySignature,
+} from "../services/AuthService";
 
 export async function handleRequestNonce(req: Request, res: Response) {
   try {
@@ -29,6 +33,21 @@ export async function handleVerifySignature(req: Request, res: Response) {
     console.log("Token sent by controller", jwtToken);
   } catch (error) {
     console.log(error);
+    res.status(400).json({ error: error.message });
+  }
+}
+
+export async function handleRefreshToken(req: Request, res: Response) {
+  try {
+    const { walletAddress } = (req as any).user;
+
+    const newToken = await refreshToken(walletAddress);
+    if (!newToken) {
+      return res.status(401).json({ error: "Could not refresh token" });
+    }
+
+    res.json({ token: newToken });
+  } catch (error) {
     res.status(400).json({ error: error.message });
   }
 }

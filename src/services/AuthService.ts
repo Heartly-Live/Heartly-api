@@ -55,3 +55,22 @@ export async function verifySignature(
     return;
   }
 }
+
+export async function refreshToken(walletAddress: string) {
+  try {
+    const user = await userRepository.findOne({ where: { walletAddress } });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const newToken = generateToken({
+      username: user.username,
+      walletAddress: user.walletAddress,
+    });
+
+    return newToken;
+  } catch (error) {
+    throw new Error("Error refreshing token");
+  }
+}
