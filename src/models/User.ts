@@ -6,6 +6,7 @@ import {
   ManyToMany,
 } from "typeorm";
 import { Language } from "./Language";
+import { Expertise } from "./Expertise";
 
 @Entity()
 export class User {
@@ -13,7 +14,7 @@ export class User {
   id!: string;
 
   @Column({ unique: true })
-  username!: string;
+  username: string;
 
   @Column({ unique: true })
   walletAddress!: string;
@@ -36,4 +37,10 @@ export class User {
   @ManyToMany(() => Language, (language) => language.users, { cascade: true })
   @JoinTable()
   languages!: Language[];
+
+  @ManyToMany(() => Expertise, (expertise) => expertise.users, {
+    cascade: true,
+  })
+  @JoinTable()
+  expertises!: Expertise[];
 }

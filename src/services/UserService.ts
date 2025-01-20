@@ -38,7 +38,7 @@ export async function checkUsername(username: string) {
 }
 
 export async function createUser(data: {
-  username: string;
+  username?: string;
   walletAddress: string;
   voiceCallRate?: number;
   videoCallRate?: number;
@@ -47,7 +47,7 @@ export async function createUser(data: {
 }) {
   const newNonce: string = crypto.randomBytes(16).toString("hex");
   const userData: {
-    username: string;
+    username?: string;
     walletAddress: string;
     voiceCallRate?: number;
     videoCallRate?: number;
@@ -138,7 +138,6 @@ export async function getAllUsers() {
 export async function editUser(
   walletAddress: string,
   data: {
-    username?: string;
     voiceCallRate?: number;
     videoCallRate?: number;
     languages?: string[];
@@ -164,7 +163,6 @@ export async function editUser(
     }
     if (data.voiceCallRate) user.voiceCallRate = data.voiceCallRate;
     if (data.videoCallRate) user.videoCallRate = data.videoCallRate;
-    if (data.username) user.username = data.username;
   }
   await userRepository.save(user);
   const savedUser = await userRepository.findOne({
