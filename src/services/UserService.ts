@@ -3,10 +3,13 @@ import { AppDataSource } from "../db/AppDataSource";
 import { User } from "../models/User";
 import crypto from "crypto";
 import { Language } from "../models/Language";
+import { Expertise } from "../models/Expertise";
 
 const userRepository: Repository<User> = AppDataSource.getRepository(User);
 const languageRepository: Repository<Language> =
   AppDataSource.getRepository(Language);
+const expertiseRepository: Repository<Expertise> =
+  AppDataSource.getRepository(Expertise);
 
 const userHelper = (
   user: User,
@@ -16,6 +19,7 @@ const userHelper = (
   voicecallRate: number;
   videoCallRate: number;
   languages: string[];
+  expertises: string[];
   role: string;
 } => {
   return {
@@ -24,6 +28,7 @@ const userHelper = (
     voicecallRate: user.voiceCallRate,
     videoCallRate: user.videoCallRate,
     languages: user.languages.map((language) => language.name),
+    expertises: user.expertises.map((expertise) => expertise.name),
     role: user.role,
   };
 };
@@ -43,7 +48,7 @@ export async function createUser(data: {
   voiceCallRate?: number;
   videoCallRate?: number;
   languages?: string[];
-  //specialities?: [string];
+  expertises: string[];
 }) {
   const newNonce: string = crypto.randomBytes(16).toString("hex");
   const userData: {
@@ -68,7 +73,17 @@ export async function createUser(data: {
     }
   }
 
-  const user = userRepository.create({ ...userData, languages });
+  const expertises: Expertise[] = [];
+
+  if (data.expertises) {
+    for (const expertiseName of data.expertises) {
+      const expertise = await expertiseRepository.findOne({
+        where: { name: expertiseName },
+      });
+      if (expertise) expertises.push(expertise);
+    }
+  }
+  const user = userRepository.create({ ...userData, languages, expertises });
 
   const savedUser = await userRepository.save(user);
   return userHelper(savedUser);
@@ -79,6 +94,7 @@ export async function getUserByWalletAddress(walletAddress: string) {
     where: { walletAddress },
     relations: {
       languages: true,
+      expertises: true,
     },
     select: {
       nonce: false,
@@ -97,7 +113,7 @@ export async function getUserByWalletAddress(walletAddress: string) {
 export async function getUserByUsername(username: string) {
   const user = await userRepository.findOne({
     where: { username },
-    relations: ["languages"],
+    relations: ["languages", "expertises"],
     select: {
       nonce: false,
       id: false,
@@ -114,7 +130,7 @@ export async function getUserByUsername(username: string) {
 
 export async function getAllUsers() {
   const users = await userRepository.find({
-    relations: ["languages"],
+    relations: ["languages", "expertises"],
     select: {
       nonce: false,
       id: false,
@@ -141,13 +157,15 @@ export async function editUser(
     voiceCallRate?: number;
     videoCallRate?: number;
     languages?: string[];
+    expertises?: string[];
   },
 ) {
   const user = await userRepository.findOne({
     where: { walletAddress },
-    relations: ["languages"],
+    relations: ["languages", "expertises"],
   });
   const languages: Language[] = [];
+  const expertises: Expertise[] = [];
   if (!user) {
     throw new Error("Cannot find user");
   } else {
@@ -161,13 +179,23 @@ export async function editUser(
       delete data.languages;
       user.languages = languages;
     }
+    if (data.expertises) {
+      for (const expertiseName of data.expertises) {
+        const expertise = await expertiseRepository.findOne({
+          where: { name: expertiseName },
+        });
+        if (expertise) expertises.push(expertise);
+      }
+      delete data.expertises;
+      user.expertises = expertises;
+    }
     if (data.voiceCallRate) user.voiceCallRate = data.voiceCallRate;
     if (data.videoCallRate) user.videoCallRate = data.videoCallRate;
   }
   await userRepository.save(user);
   const savedUser = await userRepository.findOne({
     where: { walletAddress },
-    relations: ["languages"],
+    relations: ["languages", "expertises"],
     select: {
       nonce: false,
       id: false,
@@ -184,16 +212,21 @@ export async function editUser(
 
 export async function getAllListeners(
   languages: string[] = [],
-  //specialities?: string[],
+  expertises: string[] = [],
   status?: string,
 ) {
   const query = userRepository
     .createQueryBuilder("user")
     .leftJoinAndSelect("user.languages", "language")
+    .leftJoinAndSelect("user.expertises", "expertise")
     .where("user.role = :role", { role: "listener" });
 
   if (languages.length > 0) {
     query.andWhere("language.name IN (:...languages)", { languages });
+  }
+
+  if (expertises.length > 0) {
+    query.andWhere("expertise.name IN (:...expertises)", { expertises });
   }
 
   if (status === "active") {
