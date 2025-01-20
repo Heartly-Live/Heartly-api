@@ -48,7 +48,7 @@ export async function createUser(data: {
   voiceCallRate?: number;
   videoCallRate?: number;
   languages?: string[];
-  expertises: string[];
+  expertises?: string[];
 }) {
   const newNonce: string = crypto.randomBytes(16).toString("hex");
   const userData: {
