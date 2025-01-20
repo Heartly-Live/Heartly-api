@@ -22,14 +22,21 @@ export async function handleCheckUsername(req: Request, res: Response) {
 
 export async function handleCreateUser(req: Request, res: Response) {
   try {
-    const { username, walletAddress, voiceCallRate, videoCallRate, languages } =
-      req.body;
+    const {
+      username,
+      walletAddress,
+      voiceCallRate,
+      videoCallRate,
+      languages,
+      expertises,
+    } = req.body;
     const newUser = await createUser({
       username,
       walletAddress,
       voiceCallRate,
       videoCallRate,
       languages,
+      expertises,
     });
     res.status(201).json(newUser);
   } catch (error) {
