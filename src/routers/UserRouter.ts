@@ -24,8 +24,8 @@ userRouter.get(
   authenticateToken,
   handleGetUserByUsername,
 );
-userRouter.get("/all", authenticateToken, handleGetAllUsers);
+userRouter.get("/all", handleGetAllUsers);
 userRouter.put("/:walletAddress", authenticateToken, handleEditUser);
-userRouter.get("/listener", authenticateToken, handleGetAllListeners);
+userRouter.get("/listener", handleGetAllListeners);
 
 export default userRouter;

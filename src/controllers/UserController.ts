@@ -91,6 +91,7 @@ export async function handleGetAllListeners(req: Request, res: Response) {
   try {
     const listeners = await getAllListeners(
       req.body.languages,
+      req.body.expertises,
       req.body.status,
     );
     if (!listeners)
