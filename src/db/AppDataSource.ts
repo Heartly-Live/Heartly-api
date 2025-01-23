@@ -20,5 +20,5 @@ export const AppDataSource = new DataSource({
   password: dbPassword,
   database: dbDatabse,
   entities: [User, Language, Expertise],
-  synchronize: true,
+  synchronize: false,
 });

@@ -8,38 +8,46 @@ export default function socketSetup(io: SocketServer) {
 
   io.on("connection", async (socket: ExtendedSocket) => {
     if (socket.user?.username && socket.user?.walletAddress) {
-      onlineUsers.set(socket.user.username, socket.id);
+      onlineUsers.set(socket.user.walletAddress, socket.id);
       await setUserOnline(socket.user.walletAddress);
       console.log(
-        `Set ${socket.user.username} as ${onlineUsers.get(socket.user.username)}`,
+        `Set ${socket.user.walletAddress} as ${onlineUsers.get(socket.user.walletAddress)}`,
       );
     } else {
       socket.disconnect();
     }
+    console.log(`${socket.id} joined`);
 
-    socket.on("call-accepted", async ({ username, caller, roomId, peerId }) => {
-      console.log(`Call accepted by ${username}`);
+    socket.on("call-accepted", async ({ caller, roomId, peerId }) => {
+      console.log(`Call accepted by ${socket.user?.walletAddress}`);
+      const username = socket.user?.walletAddress;
       socket.join(roomId);
       socket.to(roomId).emit("call-accepted", { username, peerId });
     });
 
-    socket.on("call-denied", async ({ username, caller, roomId }) => {
-      console.log(`Call denied by ${username}`);
+    socket.on("call-denied", async ({ caller, roomId }) => {
+      console.log(`Call denied by ${socket.user?.walletAddress}`);
+      const username = socket.user?.walletAddress;
       socket.to(roomId).emit("call-denied", { username });
       await io.sockets.sockets
         .get(onlineUsers.get(caller) || "")
         ?.leave(roomId);
     });
 
-    socket.on("request-call", ({ reciever, username }) => {
-      console.log(`Call request for ${reciever} from ${username}`);
-      if (onlineUsers.has(reciever) && reciever !== username) {
+    socket.on("request-call", ({ reciever }) => {
+      console.log(
+        `Call request for ${reciever} from ${socket.user?.walletAddress}`,
+      );
+      if (
+        onlineUsers.has(reciever) &&
+        reciever !== socket.user?.walletAddress
+      ) {
         const roomId = uuidv4();
         console.log(`${socket.id} joined ${roomId}`);
         socket.join(roomId);
         socket
           .to(onlineUsers.get(reciever) || "")
-          .emit("call-request", { caller: username, roomId });
+          .emit("call-request", { caller: socket.user?.walletAddress, roomId });
       } else {
         console.log("Cant find requested user to call");
         socket.emit("User-not-found");
@@ -48,7 +56,7 @@ export default function socketSetup(io: SocketServer) {
 
     socket.on("disconnect", async () => {
       if (socket.user?.username && socket.user?.walletAddress) {
-        onlineUsers.delete(socket.user?.username || "");
+        onlineUsers.delete(socket.user?.walletAddress || "");
         await setUserOffline(socket.user?.walletAddress);
         console.log("User disconnect:", socket.id);
       }

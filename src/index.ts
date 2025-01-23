@@ -19,7 +19,7 @@ const socketPort = parseInt(process.env.PORT || "8001");
 const server: HTTPServer = createServer(app);
 const io: SocketServer = new SocketServer(socketPort, {
   path: "/socket/",
-  cors: { origin: ["http://localhost:5173", "https://localhost:3000"] },
+  cors: { origin: ["http://localhost:5173", "http://localhost:3000"] },
 });
 const peerServer = ExpressPeerServer(server, {
   path: "/peer",
@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to the heartly api" });
 });
 
-io.use((socket: ExtendedSocket, next) => {
+/*io.use((socket: ExtendedSocket, next) => {
   const token = socket.handshake.auth.token;
   const authenticatedUser = authenticateSocketToken(token);
   if (!authenticatedUser) {
@@ -54,7 +54,7 @@ io.use((socket: ExtendedSocket, next) => {
     socket.user = authenticatedUser;
   }
   next();
-});
+});*/
 socketSetup(io);
 
 AppDataSource.initialize()
