@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to the heartly api" });
 });
 
-/*io.use((socket: ExtendedSocket, next) => {
+io.use((socket: ExtendedSocket, next) => {
   const token = socket.handshake.auth.token;
   const authenticatedUser = authenticateSocketToken(token);
   if (!authenticatedUser) {
@@ -52,9 +52,9 @@ app.get("/", (req, res) => {
   } else {
     console.log("Authenticated");
     socket.user = authenticatedUser;
+    next();
   }
-  next();
-});*/
+});
 socketSetup(io);
 
 AppDataSource.initialize()
