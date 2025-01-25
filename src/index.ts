@@ -19,10 +19,17 @@ const socketPort = parseInt(process.env.PORT || "8001");
 const server: HTTPServer = createServer(app);
 const io: SocketServer = new SocketServer(socketPort, {
   path: "/socket/",
-  cors: { origin: ["http://localhost:5173", "http://localhost:3000"] },
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://heartly.live",
+    ],
+  },
 });
 const peerServer = ExpressPeerServer(server, {
   path: "/peer",
+  proxied: true,
 });
 
 app.use(
