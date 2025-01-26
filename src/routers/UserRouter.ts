@@ -7,6 +7,7 @@ import {
   handleEditUser,
   handleGetAllUsers,
   handleGetAllListeners,
+  handleChangeRoleToListener,
 } from "../controllers/UserController";
 import { authenticateToken } from "../middlewares/AuthMiddleware";
 
@@ -27,5 +28,6 @@ userRouter.get(
 userRouter.get("/all", handleGetAllUsers);
 userRouter.put("/:walletAddress", authenticateToken, handleEditUser);
 userRouter.get("/listener", handleGetAllListeners);
+userRouter.get("/listener/:walletAddress", handleChangeRoleToListener);
 
 export default userRouter;

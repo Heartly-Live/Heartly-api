@@ -269,3 +269,11 @@ export async function setUserOffline(walletAddress: string) {
     },
   });
 }
+
+export async function changeRoleToListener(walletAddress: string) {
+  await userRepository.update({ walletAddress }, { role: "listener" });
+  return userRepository.findOne({
+    where: { walletAddress },
+    select: { walletAddress: true, role: true, status: true },
+  });
+}

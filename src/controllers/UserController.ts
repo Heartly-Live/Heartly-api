@@ -7,6 +7,7 @@ import {
   editUser,
   getAllUsers,
   getAllListeners,
+  changeRoleToListener,
 } from "../services/UserService";
 
 export async function handleCheckUsername(req: Request, res: Response) {
@@ -97,6 +98,19 @@ export async function handleGetAllListeners(req: Request, res: Response) {
     if (!listeners)
       return res.status(404).json({ error: "Listerners not found" });
     res.json(listeners);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+export async function handleChangeRoleToListener(req: Request, res: Response) {
+  try {
+    const updatedListener = await changeRoleToListener(
+      req.params.walletAddress,
+    );
+    if (!updatedListener)
+      return res.status(404).json({ error: "User not found" });
+    res.json(updatedListener);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
