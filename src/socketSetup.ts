@@ -7,13 +7,14 @@ export default function socketSetup(io: SocketServer) {
   let onlineUsers = new Map<string, string>();
 
   io.on("connection", async (socket: ExtendedSocket) => {
-    if (socket.user?.username && socket.user?.walletAddress) {
+    if (socket.user?.walletAddress) {
       onlineUsers.set(socket.user.walletAddress, socket.id);
       await setUserOnline(socket.user.walletAddress);
       console.log(
         `Set ${socket.user.walletAddress} as ${onlineUsers.get(socket.user.walletAddress)}`,
       );
     } else {
+      console.log("Couldnt add user, closed socket");
       socket.disconnect();
     }
     console.log(`${socket.id} joined`);
@@ -39,8 +40,8 @@ export default function socketSetup(io: SocketServer) {
         `Call request for ${reciever} from ${socket.user?.walletAddress}`,
       );
       if (
-        onlineUsers.has(reciever) &&
-        reciever !== socket.user?.walletAddress
+        onlineUsers.has(reciever) //&&
+        //reciever !== socket.user?.walletAddress
       ) {
         const roomId = uuidv4();
         console.log(`${socket.id} joined ${roomId}`);
