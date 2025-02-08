@@ -39,6 +39,8 @@ export default function socketSetup(io: SocketServer) {
       console.log(
         `Call request for ${reciever} from ${socket.user?.walletAddress}`,
       );
+      console.log("All users online:", onlineUsers);
+      console.log("Is online?", onlineUsers.has(reciever));
       if (
         onlineUsers.has(reciever) //&&
         //reciever !== socket.user?.walletAddress
