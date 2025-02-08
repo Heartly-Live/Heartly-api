@@ -4,16 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 import { setUserOnline, setUserOffline } from "./services/UserService";
 
 export default function socketSetup(io: SocketServer) {
-  // Using a plain object to store online users
   const onlineUsers: Record<string, string> = {};
 
   io.on("connection", async (socket: ExtendedSocket) => {
     if (socket.user?.walletAddress) {
-      onlineUsers[socket.user.walletAddress] = socket.id;
-      await setUserOnline(socket.user.walletAddress);
-      console.log(
-        `Set ${socket.user.walletAddress} as ${onlineUsers[socket.user.walletAddress]}`,
-      );
+      const walletAddress = socket.user.walletAddress.toLowerCase();
+      onlineUsers[walletAddress] = socket.id;
+      await setUserOnline(walletAddress);
+      console.log(`Set ${walletAddress} as ${onlineUsers[walletAddress]}`);
     } else {
       console.log("Couldn't add user, closed socket");
       socket.disconnect();
@@ -23,19 +21,18 @@ export default function socketSetup(io: SocketServer) {
     console.log(`${socket.id} joined`);
 
     socket.on("call-accepted", async ({ caller, roomId, peerId }) => {
-      console.log(`Call accepted by ${socket.user?.walletAddress}`);
-      const username = socket.user?.walletAddress;
+      const username = socket.user?.walletAddress?.toLowerCase();
+      console.log(`Call accepted by ${username}`);
       socket.join(roomId);
       socket.to(roomId).emit("call-accepted", { username, peerId });
     });
 
     socket.on("call-denied", async ({ caller, roomId }) => {
-      console.log(`Call denied by ${socket.user?.walletAddress}`);
-      const username = socket.user?.walletAddress;
+      const username = socket.user?.walletAddress?.toLowerCase();
+      console.log(`Call denied by ${username}`);
       socket.to(roomId).emit("call-denied", { username });
 
-      // Get caller's socket and make them leave the room
-      const callerSocketId = onlineUsers[caller];
+      const callerSocketId = onlineUsers[caller.toLowerCase()];
       if (callerSocketId) {
         const callerSocket = io.sockets.sockets.get(callerSocketId);
         if (callerSocket) {
@@ -50,21 +47,26 @@ export default function socketSetup(io: SocketServer) {
         return;
       }
 
+      const normalizedReciever = reciever.toLowerCase();
+      const normalizedCaller = socket.user.walletAddress.toLowerCase();
+
       console.log(
-        `Call request for ${reciever} from ${socket.user.walletAddress}`,
+        `Call request for ${normalizedReciever} from ${normalizedCaller}`,
       );
       console.log("All users online:", onlineUsers);
-      console.log("Is online?", reciever in onlineUsers);
+      console.log("Is online?", normalizedReciever in onlineUsers);
 
-      // Check if receiver exists and is not the caller
-      if (reciever in onlineUsers && reciever !== socket.user.walletAddress) {
+      if (
+        normalizedReciever in onlineUsers &&
+        normalizedReciever !== normalizedCaller
+      ) {
         const roomId = uuidv4();
         console.log(`${socket.id} joined ${roomId}`);
         socket.join(roomId);
 
-        const receiverSocketId = onlineUsers[reciever];
+        const receiverSocketId = onlineUsers[normalizedReciever];
         socket.to(receiverSocketId).emit("call-request", {
-          caller: socket.user.walletAddress,
+          caller: normalizedCaller,
           roomId,
         });
       } else {
@@ -75,28 +77,17 @@ export default function socketSetup(io: SocketServer) {
 
     socket.on("disconnect", async () => {
       if (socket.user?.walletAddress) {
-        delete onlineUsers[socket.user.walletAddress];
-        await setUserOffline(socket.user.walletAddress);
+        const walletAddress = socket.user.walletAddress.toLowerCase();
+        delete onlineUsers[walletAddress];
+        await setUserOffline(walletAddress);
         console.log("User disconnected:", socket.id);
       }
     });
   });
 
-  /*
-  // Optional: Add an interval to clean up stale connections
-  setInterval(() => {
-    for (const [walletAddress, socketId] of Object.entries(onlineUsers)) {
-      if (!io.sockets.sockets.has(socketId)) {
-        delete onlineUsers[walletAddress];
-        setUserOffline(walletAddress).catch(console.error);
-        console.log(`Cleaned up stale connection for ${walletAddress}`);
-      }
-    }
-  }, 60000); // Run every minute
-*/
   return {
-    // Expose methods to check online status if needed
-    isUserOnline: (walletAddress: string) => walletAddress in onlineUsers,
+    isUserOnline: (walletAddress: string) =>
+      walletAddress.toLowerCase() in onlineUsers,
     getOnlineUsers: () => ({ ...onlineUsers }),
   };
 }
